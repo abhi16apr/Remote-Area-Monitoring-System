@@ -1,0 +1,94 @@
+I2C Scanner Tutorial: https://randomnerdtutorials.com/esp32-i2c-communication-arduino-ide/
+
+Painless mesh:
+
+  - connected 3 nodes - 2 regular and 1 aggregator
+  - tested node in the middle communication
+      - far node out of range from aggregator
+      - middle node powered on connected to aggregator
+      - far node picked up connection through middle to aggregator
+  - Any network topology change takes time - approx. 3 mins average
+  - each node has a node id that may be used as an address to send direct messages
+  - JSON variable will be useful for sensor data
+  - there is a method to pass arguments to send message using lambda
+      - look though examples on painlessMesh
+  - Needed additional asyncTCP library - manually cloned from github - see ref links
+
+  Reference Links:
+    - Full Tutorial: https://randomnerdtutorials.com/esp-mesh-esp32-esp8266-painlessmesh/
+    - TCP Library: https://github.com/me-no-dev/AsyncTCP
+    - aggregator reference code: https://gitlab.com/painlessMesh/painlessMesh/-/blob/develop/examples/basic/basic.ino
+    - regular node reference code: https://gitlab.com/painlessMesh/painlessMesh/-/blob/develop/examples/echoNode/echoNode.ino
+
+
+Capacitive Soil Sensor:
+  - ADC max on ESP 32 is 4095 - min is 0
+  - SN1: Current draw: 5.66mA
+  - SN4: Current draw: 5.64mA
+  - SN1: Dry measurement ~2800 counts
+  - SN1: Damp Paper towel measurement ~ 1500 counts
+  - SN1: Submerged ~950
+  - SN2: Dry measurement ~2800
+  - SN2: Submerged ~950
+  - SN3: Dry measurement ~2850
+  - SN3: Submerged ~950
+  - SN4: Dry measurement ~2900
+  - SN4: Submerged ~950
+
+
+BME280:
+  - Used Adafruit library - specify the address as 0x76 in bme.begin(0x76)
+  - Current: 0.45mA
+  - Saw some issues where other unpowered devices would be detected / prevent
+    detection of other devices
+  - Pressure measured 1019.9 - actual 1020 hPa
+  - Temperature measured 78F - actual ~73F
+  - Humidity measured 42% - actual ~50%
+
+
+Compass
+  - current: 1.05mA
+  - the compass reference point is the tip of the y arrow
+  - azimuth = 0-360 degrees
+
+
+Ultrasonic Anemometer
+  - Why did we leave it?
+    - when measuring the voltage on the output there is only a 700mv delta
+      this difference is not much more than the noise on the signal
+    - the output filters out the AC sin wave to produce a DC voltage
+    - If the amplitude of the signal is larger it may let more noise through
+    - Inconsistent readings
+
+
+Rotary Position Sensor
+  - Melexis
+  - 4.5mm max separation distance from supplied magnet to guide ring
+
+Hall Effect Wind Speed Sensor
+  - use interrupts to count the pulses
+  - interrupts are very sensitive to noise
+  - noisy digital signal causes higher than expected count
+
+Camera
+  - process for reverse engineering ArduCam Software
+      1. Load serial logger modified example on cam arduino
+      2. Open ArduCam windows ui and open com port
+      3. select settings in arducam and capture
+      4. close com port in ArduCam
+      5. open com port in Arduino serial monitor
+      6. send a -1 to the arduino
+      7. take note of the logged bytes in decimal form
+      8. convert bytes to hex
+      9. serial write hex bytes using python
+
+ --- Testing Notes ---
+04/04/22
+  Melexis Position Sensor
+    - voltage divider is not functioning as expected
+    - measures greater than 4v into analog pin on arduino
+
+  Hall Speed Sensor
+    - Pulses count is higher than expected
+    - calculating rpm as (pulses / 2) * 60 -> pulses = pulses per second
+    - Suspect noise on square wave causing issues
